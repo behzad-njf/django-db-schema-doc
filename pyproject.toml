@@ -9,7 +9,7 @@ description = "Generate DATABASE.md schema documentation for Django projects and
 readme = "README.md"
 license = "MIT"
 authors = [
-    { name = "iSight / MrHiB" },
+    { name = "MrHiB" },
 ]
 keywords = ["django", "database", "schema", "documentation", "llm", "markdown", "introspection"]
 classifiers = [
@@ -41,10 +41,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/your-org/django-db-schema-doc"
-Documentation = "https://github.com/your-org/django-db-schema-doc#readme"
-Repository = "https://github.com/your-org/django-db-schema-doc"
-Issues = "https://github.com/your-org/django-db-schema-doc/issues"
+Homepage = "https://github.com/behzad-njf/django-db-schema-doc"
+Documentation = "https://github.com/behzad-njf/django-db-schema-doc#readme"
+Repository = "https://github.com/behzad-njf/django-db-schema-doc"
+Issues = "https://github.com/behzad-njf/django-db-schema-doc/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
