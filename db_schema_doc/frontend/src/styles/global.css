@@ -730,3 +730,45 @@ code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.85em;
 }
+
+.detail-examples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.detail-examples li {
+  margin-bottom: 0.85rem;
+}
+
+.detail-examples__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.detail-examples__badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  margin-left: 0.25rem;
+}
+
+.detail-examples__code {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.7rem;
+  line-height: 1.45;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.detail-examples__code code {
+  font-size: inherit;
+}

@@ -7,7 +7,7 @@ from __future__ import annotations
 from collections import defaultdict
 from datetime import datetime, timezone
 
-from .collector import DatabaseSchema, ForeignKeyInfo, TableInfo
+from .collector import DatabaseSchema, ForeignKeyInfo, QueryExample, TableInfo
 
 
 # Known framework table prefixes (any Django project)
@@ -211,6 +211,30 @@ class MarkdownWriter:
             w("---")
             w("")
 
+    def _write_business_context(self, w, table: TableInfo) -> None:
+        biz = table.business
+        if biz is None:
+            return
+        has_model_doc = bool(
+            table.django_model and table.django_model.doc
+        )
+        if biz.description:
+            label = (
+                "**Inferred business context:**"
+                if has_model_doc
+                else "**Business description:**"
+            )
+            w(f"- {label}")
+            w("")
+            w(f"  {biz.description}")
+            w("")
+        if biz.hints:
+            w("- **Business hints:**")
+            w("")
+            for hint in biz.hints:
+                w(f"  - {hint}")
+            w("")
+
     def _write_table(self, w, table: TableInfo) -> None:
         anchor = table.name.lower()
         dom = infer_domain(table.name)
@@ -219,6 +243,19 @@ class MarkdownWriter:
         w(f"### `{table.name}`")
         w("")
         w(f"- **Domain:** `{dom}`")
+        if table.django_model is not None:
+            dm = table.django_model
+            label = f"{dm.app_label}.{dm.model_name}"
+            w(f"- **Django model:** `{label}`")
+            if dm.verbose_name and dm.verbose_name != dm.model_name:
+                w(f"- **Model label:** {dm.verbose_name}")
+            if dm.doc:
+                w("- **Business description (model):**")
+                w("")
+                for line in dm.doc.splitlines():
+                    w(f"  {line}")
+                w("")
+        self._write_business_context(w, table)
         if table.primary_key:
             w(f"- **Primary key:** `{', '.join(table.primary_key)}`")
         else:
@@ -246,16 +283,30 @@ class MarkdownWriter:
 
         w("**Columns:**")
         w("")
-        w("| # | Column | Type | Nullable | Default |")
-        w("|---|--------|------|----------|---------|")
+        show_django = table.django_model is not None
+        if show_django:
+            w("| # | Column | Django field | Label | Help | Type | Nullable | Default |")
+            w("|---|--------|--------------|-------|------|------|----------|---------|")
+        else:
+            w("| # | Column | Type | Nullable | Default |")
+            w("|---|--------|------|----------|---------|")
         for col in table.columns:
             pk = " 🔑" if col.is_primary_key else ""
             null = "YES" if col.nullable else "NO"
             default = col.default or ""
-            w(
-                f"| {col.ordinal} | `{col.name}`{pk} | {col.type_display} "
-                f"| {null} | {default} |"
-            )
+            if show_django:
+                field = f"`{col.django_field}`" if col.django_field else ""
+                label = col.verbose_name or ""
+                help_txt = col.help_text.replace("|", "\\|") if col.help_text else ""
+                w(
+                    f"| {col.ordinal} | `{col.name}`{pk} | {field} | {label} | "
+                    f"{help_txt} | {col.type_display} | {null} | {default} |"
+                )
+            else:
+                w(
+                    f"| {col.ordinal} | `{col.name}`{pk} | {col.type_display} "
+                    f"| {null} | {default} |"
+                )
         w("")
 
         if table.indexes:
@@ -265,6 +316,22 @@ class MarkdownWriter:
                 uniq = "UNIQUE " if idx.unique else ""
                 cols = ", ".join(idx.columns)
                 w(f"- `{idx.name}` ({uniq}): {cols}")
+            w("")
+
+        self._write_query_examples(w, table)
+
+    def _write_query_examples(self, w, table: TableInfo) -> None:
+        if not table.query_examples:
+            return
+        w("**Query examples:**")
+        w("")
+        for example in table.query_examples:
+            lang = "python" if example.kind == "orm" else "sql"
+            w(f"- *{example.title}* ({example.kind.upper()})")
+            w("")
+            w(f"```{lang}")
+            w(example.code)
+            w("```")
             w("")
 
     @staticmethod

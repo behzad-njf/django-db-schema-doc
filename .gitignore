@@ -28,5 +28,7 @@ examples/demo_project/DATABASE.md
 examples/demo_project/schema.json
 examples/demo_project/schema.dbml
 examples/demo_project/schema-erd/
+examples/demo_project/ai_schema.json
+examples/demo_project/schema_examples.json
 node_modules/
 db_schema_doc/frontend/dist/

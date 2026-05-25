@@ -37,6 +37,8 @@ jobs:
           python manage.py migrate --noinput
           python manage.py generate_database_doc -o DATABASE.md
           python manage.py export_schema_json -o schema.json
+          python manage.py export_ai_schema -o ai_schema.json --project-name "demo"
+          python manage.py export_schema_examples -o schema_examples.json
           python manage.py export_dbml -o schema.dbml
           python manage.py generate_erd -o schema-erd
 
@@ -47,5 +49,7 @@ jobs:
           path: |
             examples/demo_project/DATABASE.md
             examples/demo_project/schema.json
+            examples/demo_project/ai_schema.json
+            examples/demo_project/schema_examples.json
             examples/demo_project/schema.dbml
             examples/demo_project/schema-erd/

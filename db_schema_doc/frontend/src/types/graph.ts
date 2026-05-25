@@ -7,6 +7,9 @@ export type ColumnDetail = {
   default: string | null;
   ordinal: number;
   is_primary_key: boolean;
+  django_field?: string;
+  verbose_name?: string;
+  help_text?: string;
 };
 
 export type ForeignKeyDetail = {
@@ -25,6 +28,27 @@ export type IndexDetail = {
   unique: boolean;
 };
 
+export type DjangoModelDetail = {
+  app_label: string;
+  model_name: string;
+  verbose_name?: string;
+  verbose_name_plural?: string;
+  doc?: string;
+};
+
+export type BusinessDetail = {
+  description?: string;
+  sources?: string[];
+  hints?: string[];
+};
+
+export type QueryExampleDetail = {
+  kind: "sql" | "orm" | string;
+  title: string;
+  code: string;
+  related_tables?: string[];
+};
+
 export type TableDetail = {
   name: string;
   schema?: string;
@@ -34,6 +58,9 @@ export type TableDetail = {
   outgoing_fks: ForeignKeyDetail[];
   incoming_fks: ForeignKeyDetail[];
   indexes: IndexDetail[];
+  django_model?: DjangoModelDetail;
+  business?: BusinessDetail;
+  query_examples?: QueryExampleDetail[];
 };
 
 export type TableNodeData = {

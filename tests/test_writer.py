@@ -14,7 +14,12 @@ def test_infer_domain_django_system():
 
 @pytest.mark.django_db
 def test_markdown_writer_includes_shop_tables():
+    from db_schema_doc.business_rules import enrich_schema_with_business_descriptions
+    from db_schema_doc.models_meta import enrich_schema_with_models
+
     schema = SchemaCollector().collect()
+    enrich_schema_with_models(schema)
+    enrich_schema_with_business_descriptions(schema)
     md = MarkdownWriter(schema, title="Test Schema").write()
     assert "# Test Schema" in md
     assert "shop_order" in md

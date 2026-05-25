@@ -17,7 +17,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.db import connections
 
-from db_schema_doc.collector import SchemaCollector
+from db_schema_doc.management.command_utils import collect_schema
 from db_schema_doc.writer import MarkdownWriter
 
 
@@ -55,6 +55,21 @@ class Command(BaseCommand):
             help="Run COUNT(*) per table (slow on large databases).",
         )
         parser.add_argument(
+            "--no-model-metadata",
+            action="store_true",
+            help="Skip merging Django model docstrings and field labels.",
+        )
+        parser.add_argument(
+            "--no-business-descriptions",
+            action="store_true",
+            help="Skip rule-based business descriptions.",
+        )
+        parser.add_argument(
+            "--no-query-examples",
+            action="store_true",
+            help="Skip SQL / ORM query example sections.",
+        )
+        parser.add_argument(
             "--hub-limit",
             type=int,
             default=25,
@@ -90,12 +105,7 @@ class Command(BaseCommand):
                 f"Available: {', '.join(sorted(connections.databases))}"
             )
 
-        self.stdout.write(f"Introspecting database {database!r}...")
-        collector = SchemaCollector(
-            database=database,
-            include_views=options["include_views"],
-        )
-        schema = collector.collect(row_counts=options["with_row_counts"])
+        schema = collect_schema(self, options)
 
         title = options["title"] or None
         hints = options["project_hints"] or None

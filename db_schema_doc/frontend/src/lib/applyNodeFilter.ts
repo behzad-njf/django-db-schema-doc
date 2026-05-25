@@ -1,5 +1,6 @@
 import type { Edge, Node } from "@xyflow/react";
 import { neighborIds } from "./neighbors";
+import { tableMatchesSearch } from "./tableSearch";
 import type { TableNodeData } from "../types/graph";
 
 export type FilterInput = {
@@ -25,15 +26,13 @@ export function applyNodeFilter({
   query,
   focusId,
 }: FilterInput): FilterResult {
-  const lower = query.trim().toLowerCase();
+  const trimmed = query.trim();
   let visible = allNodes;
 
-  if (lower) {
-    visible = allNodes.filter((n) => {
-      const label = String(n.data?.label || n.id).toLowerCase();
-      const domain = String(n.data?.domain || "").toLowerCase();
-      return label.includes(lower) || domain.includes(lower);
-    });
+  if (trimmed) {
+    visible = allNodes.filter((n) =>
+      tableMatchesSearch(n.data ?? { label: String(n.id) }, trimmed)
+    );
   }
 
   const visibleIds = new Set(visible.map((n) => n.id));

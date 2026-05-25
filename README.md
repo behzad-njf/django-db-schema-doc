@@ -35,13 +35,43 @@ python manage.py generate_database_doc -o docs/schema.md --to-stdout
 python manage.py generate_database_doc --with-row-counts --project-hints "Notes for AI agents."
 ```
 
+When Django models use `db_table` matching the database, the doc also merges **model docstrings**, **verbose names**, and field **help text** (disable with `--no-model-metadata`). **Rule-based business context** (domain, FK roles, hub/junction heuristics, column hints) is added by default (`--no-business-descriptions` to skip).
+
 ### JSON snapshot (CI, diff, agents)
 
 ```bash
 python manage.py export_schema_json -o schema.json
 ```
 
-Stable format with `"schema_version": 1` — tables, columns, foreign keys, indexes, connection metadata (no passwords).
+Stable format with `"schema_version": 1` — tables, columns, foreign keys, indexes, optional `django_model` / field labels, connection metadata (no passwords).
+
+### AI / RAG export
+
+```bash
+python manage.py export_ai_schema -o ai_schema.json
+python manage.py export_ai_schema --project-name "My Shop" --to-stdout
+python manage.py export_ai_schema --no-fk-chunks   # table + overview chunks only
+```
+
+Produces `documents[]` with embeddable `content` per table (and optional per foreign key), plus `metadata` for filtering — suitable for vector DBs and agent context pipelines.
+
+### Schema search (CLI + ERD)
+
+```bash
+python manage.py search_schema customer email
+python manage.py search_schema order status --format json
+python manage.py search_schema product --from-json schema.json
+```
+
+Matches table/column names, Django labels, business descriptions, and FK targets (light synonyms: e.g. `fk` → foreign key, `user` → customer). The ERD explorer search box uses the same idea on loaded `graph.json`.
+
+### SQL / ORM query examples
+
+```bash
+python manage.py export_schema_examples -o schema_examples.json
+```
+
+Auto-generated per table when you run any schema command (disable with `--no-query-examples`): sample **SQL** (`SELECT`, `JOIN`, filters) and **Django ORM** snippets (`select_related`, `prefetch_related`, etc.). Shown in `DATABASE.md`, JSON exports, and the ERD table detail panel after `generate_erd`.
 
 ### DBML export
 

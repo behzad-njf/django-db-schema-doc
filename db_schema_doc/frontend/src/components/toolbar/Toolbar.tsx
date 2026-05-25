@@ -49,7 +49,7 @@ export default function Toolbar({
         <input
           type="search"
           className="erd-toolbar__search"
-          placeholder="Search tables or domain…"
+          placeholder="Search tables, columns, docs…"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
         />

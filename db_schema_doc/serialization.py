@@ -7,10 +7,13 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .collector import (
+    BusinessDescription,
     ColumnInfo,
     DatabaseSchema,
+    DjangoModelInfo,
     ForeignKeyInfo,
     IndexInfo,
+    QueryExample,
     TableInfo,
 )
 
@@ -67,7 +70,7 @@ def load_schema_dict(path: str) -> dict[str, Any]:
 
 
 def _table_to_dict(table: TableInfo) -> dict[str, Any]:
-    return {
+    payload: dict[str, Any] = {
         "name": table.name,
         "schema": table.schema,
         "primary_key": list(table.primary_key),
@@ -77,10 +80,46 @@ def _table_to_dict(table: TableInfo) -> dict[str, Any]:
         "incoming_fks": [_fk_to_dict(fk) for fk in table.incoming_fks],
         "indexes": [_index_to_dict(idx) for idx in table.indexes],
     }
+    if table.django_model is not None:
+        payload["django_model"] = _django_model_to_dict(table.django_model)
+    if table.business is not None:
+        payload["business"] = _business_to_dict(table.business)
+    if table.query_examples:
+        payload["query_examples"] = [
+            _query_example_to_dict(ex) for ex in table.query_examples
+        ]
+    return payload
+
+
+def _query_example_to_dict(example: QueryExample) -> dict[str, Any]:
+    return {
+        "kind": example.kind,
+        "title": example.title,
+        "code": example.code,
+        "related_tables": list(example.related_tables),
+    }
+
+
+def _business_to_dict(business: BusinessDescription) -> dict[str, Any]:
+    return {
+        "description": business.description,
+        "sources": list(business.sources),
+        "hints": list(business.hints),
+    }
+
+
+def _django_model_to_dict(model: DjangoModelInfo) -> dict[str, Any]:
+    return {
+        "app_label": model.app_label,
+        "model_name": model.model_name,
+        "verbose_name": model.verbose_name,
+        "verbose_name_plural": model.verbose_name_plural,
+        "doc": model.doc,
+    }
 
 
 def _column_to_dict(col: ColumnInfo) -> dict[str, Any]:
-    return {
+    payload: dict[str, Any] = {
         "name": col.name,
         "type_display": col.type_display,
         "nullable": col.nullable,
@@ -88,6 +127,13 @@ def _column_to_dict(col: ColumnInfo) -> dict[str, Any]:
         "ordinal": col.ordinal,
         "is_primary_key": col.is_primary_key,
     }
+    if col.django_field:
+        payload["django_field"] = col.django_field
+    if col.verbose_name:
+        payload["verbose_name"] = col.verbose_name
+    if col.help_text:
+        payload["help_text"] = col.help_text
+    return payload
 
 
 def _fk_to_dict(fk: ForeignKeyInfo) -> dict[str, Any]:

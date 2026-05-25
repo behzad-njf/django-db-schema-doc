@@ -158,6 +158,25 @@ export default function TableDetailPanel({
                 </ul>
               </section>
             )}
+
+            {table.query_examples && table.query_examples.length > 0 && (
+              <section className="detail-section">
+                <h3>Query examples</h3>
+                <ul className="detail-examples">
+                  {table.query_examples.map((ex) => (
+                    <li key={`${ex.kind}-${ex.title}`}>
+                      <p className="detail-examples__title">
+                        {ex.title}{" "}
+                        <span className="detail-examples__badge">{ex.kind}</span>
+                      </p>
+                      <pre className="detail-examples__code">
+                        <code>{ex.code}</code>
+                      </pre>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </>
         )}
       </div>

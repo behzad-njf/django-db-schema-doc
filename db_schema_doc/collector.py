@@ -23,6 +23,39 @@ class ColumnInfo:
     default: str | None
     ordinal: int
     is_primary_key: bool = False
+    django_field: str = ""
+    verbose_name: str = ""
+    help_text: str = ""
+
+
+@dataclass
+class DjangoModelInfo:
+    """Django ORM metadata for a table, when a model maps to this db_table."""
+
+    app_label: str
+    model_name: str
+    verbose_name: str
+    verbose_name_plural: str
+    doc: str = ""
+
+
+@dataclass
+class BusinessDescription:
+    """Rule-inferred business context (no LLM)."""
+
+    description: str
+    sources: list[str] = field(default_factory=list)
+    hints: list[str] = field(default_factory=list)
+
+
+@dataclass
+class QueryExample:
+    """Template SQL or Django ORM snippet for agents and developers."""
+
+    kind: str  # "sql" | "orm"
+    title: str
+    code: str
+    related_tables: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -53,6 +86,9 @@ class TableInfo:
     incoming_fks: list[ForeignKeyInfo] = field(default_factory=list)
     indexes: list[IndexInfo] = field(default_factory=list)
     row_count: int | None = None
+    django_model: DjangoModelInfo | None = None
+    business: BusinessDescription | None = None
+    query_examples: list[QueryExample] = field(default_factory=list)
 
 
 @dataclass
