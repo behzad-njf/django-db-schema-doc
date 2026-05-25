@@ -20,6 +20,7 @@ htmlcov/
 
 
 PUBLISHING.md
+AGENTS.md
 .env
 examples/demo_project/*.sqlite3
 examples/demo_project/db.sqlite3

@@ -90,7 +90,7 @@ cd db_schema_doc/frontend && npm install && npm run build
 
 ## Development
 
-See **[AGENTS.md](AGENTS.md)** for the roadmap and contributor workflow.
+Contributor roadmap and phase notes are maintained locally (not in the public repo).
 
 ```bash
 git clone https://github.com/behzad-njf/django-db-schema-doc.git
