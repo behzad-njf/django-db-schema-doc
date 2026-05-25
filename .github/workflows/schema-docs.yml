@@ -1,0 +1,51 @@
+name: Schema docs
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+
+jobs:
+  schema-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Python package
+        run: pip install -e ".[dev]"
+
+      - name: Build ERD frontend
+        working-directory: db_schema_doc/frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: Run tests
+        run: pytest
+
+      - name: Generate schema artifacts (demo project)
+        working-directory: examples/demo_project
+        run: |
+          python manage.py migrate --noinput
+          python manage.py generate_database_doc -o DATABASE.md
+          python manage.py export_schema_json -o schema.json
+          python manage.py export_dbml -o schema.dbml
+          python manage.py generate_erd -o schema-erd
+
+      - name: Upload schema artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-docs
+          path: |
+            examples/demo_project/DATABASE.md
+            examples/demo_project/schema.json
+            examples/demo_project/schema.dbml
+            examples/demo_project/schema-erd/

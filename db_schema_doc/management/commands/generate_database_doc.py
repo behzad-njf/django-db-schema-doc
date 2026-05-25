@@ -76,8 +76,9 @@ class Command(BaseCommand):
             help="Optional Markdown paragraph with project-specific notes for agents.",
         )
         parser.add_argument(
-            "--stdout",
+            "--to-stdout",
             action="store_true",
+            dest="to_stdout",
             help="Print Markdown to stdout instead of writing a file.",
         )
 
@@ -108,7 +109,7 @@ class Command(BaseCommand):
         )
         markdown = writer.write()
 
-        if options["stdout"]:
+        if options["to_stdout"]:
             self.stdout.write(markdown)
             return
 

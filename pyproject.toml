@@ -38,10 +38,12 @@ dev = [
     "build>=1.0",
     "twine>=4.0",
     "ruff>=0.1",
+    "pytest>=8.0",
+    "pytest-django>=4.8",
 ]
 
 [project.urls]
-Homepage = "https://github.com/behzad-njf/django-db-schema-doc"
+Homepage = "https://behzad-njf.github.io/django-db-schema-doc/"
 Documentation = "https://github.com/behzad-njf/django-db-schema-doc#readme"
 Repository = "https://github.com/behzad-njf/django-db-schema-doc"
 Issues = "https://github.com/behzad-njf/django-db-schema-doc/issues"
@@ -51,4 +53,10 @@ where = ["."]
 include = ["db_schema_doc*"]
 
 [tool.setuptools.package-data]
-db_schema_doc = ["py.typed"]
+db_schema_doc = ["py.typed", "static/erd/**"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "demo_project.settings"
+pythonpath = ["examples/demo_project", "."]
+testpaths = ["tests"]
+addopts = "-ra"

@@ -1,0 +1,53 @@
+# Deploy the interactive ERD app to GitHub Pages.
+#
+# One-time repo setup: Settings → Pages → Build and deployment → Source: GitHub Actions
+
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: db_schema_doc/frontend/package-lock.json
+
+      - name: Build ERD frontend
+        working-directory: db_schema_doc/frontend
+        env:
+          VITE_BASE_PATH: /django-db-schema-doc/
+        run: |
+          npm ci
+          npm run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: db_schema_doc/static/erd
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

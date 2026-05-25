@@ -21,3 +21,11 @@ htmlcov/
 
 PUBLISHING.md
 .env
+examples/demo_project/*.sqlite3
+examples/demo_project/db.sqlite3
+examples/demo_project/DATABASE.md
+examples/demo_project/schema.json
+examples/demo_project/schema.dbml
+examples/demo_project/schema-erd/
+node_modules/
+db_schema_doc/frontend/dist/

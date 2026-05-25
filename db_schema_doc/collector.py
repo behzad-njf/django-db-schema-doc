@@ -173,9 +173,14 @@ class SchemaCollector:
         seen: set[tuple[str, str, str, str]] = set()
 
         try:
-            key_columns = introspection.get_key_columns(cursor, table_name)
-        except NotImplementedError:
+            get_key_columns = introspection.get_key_columns
+        except AttributeError:
             key_columns = []
+        else:
+            try:
+                key_columns = get_key_columns(cursor, table_name)
+            except NotImplementedError:
+                key_columns = []
 
         for from_col, to_table, to_col in key_columns:
             key = (table_name, from_col, to_table, to_col)
