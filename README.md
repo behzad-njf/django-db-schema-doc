@@ -93,7 +93,7 @@ python manage.py schema_diff before.json after.json -o SCHEMA_DIFF.md
 ### Interactive ERD (React Flow)
 
 ```bash
-c
+python manage.py generate_erd -o schema-erd
 ```
 
 **Online:** use the [live explorer](https://behzad-njf.github.io/django-db-schema-doc/) (no install). **Offline:** open `schema-erd/index.html` from `generate_erd`. Double-click a table for details; Esc to clear focus / close panel.
@@ -103,6 +103,65 @@ The PyPI package includes pre-built UI assets. Contributors rebuilding the UI:
 ```bash
 cd db_schema_doc/frontend && npm install && npm run build
 ```
+
+## Using with [InsightAI](https://github.com/behzad-njf/InsightAI)
+
+[InsightAI](https://github.com/behzad-njf/InsightAI) is a separate FastAPI app that turns natural language into **safe read-only SQL**, runs queries on your database, and (optionally) answers from a **Knowledge** vector index. It expects schema metadata as Markdown and business docs in `Knowledge/`. This package exports both.
+
+### 1. Export schema from your Django project
+
+```bash
+python manage.py migrate
+python manage.py generate_database_doc -o DATABASE.md --project-name "My Project"
+python manage.py export_ai_schema -o ai_schema.json --project-name "My Project"
+# optional: structural snapshot and examples
+python manage.py export_schema_json -o schema.json
+python manage.py export_schema_examples -o schema_examples.json
+```
+
+Use model docstrings, `verbose_name`, and `help_text` on your models so exports include business meaning (enabled by default). Re-run after migrations or model changes.
+
+### 2. Wire schema into InsightAI (SQL path)
+
+InsightAI loads table/column/join context from `schema/database_schema.md` ([schema folder](https://github.com/behzad-njf/InsightAI/tree/master/schema)).
+
+```bash
+# In your InsightAI clone
+cp /path/to/your/django/project/DATABASE.md schema/database_schema.md
+```
+
+Restart the API (or rely on your deploy process) so the LLM sees the updated tables, FKs, and per-table **Query examples** sections.
+
+### 3. Optional hybrid RAG (Knowledge path)
+
+When `INSIGHTAI_RAG_ENABLED=true`, InsightAI can route questions to **documents** as well as SQL. Put material under `Knowledge/` (`.md`, `.txt`, `.pdf`) and sync:
+
+```bash
+# Copy human-readable docs (policies, glossaries, onboarding) into Knowledge/
+# You can also add extra .md files derived from DATABASE.md sections or ai_schema.json chunks
+insightai-knowledge-sync --force   # requires pip install -e ".[rag]" in InsightAI
+```
+
+See InsightAI’s [Knowledge/README.md](https://github.com/behzad-njf/InsightAI/blob/master/Knowledge/README.md) and [docs/RAG_INGEST.md](https://github.com/behzad-njf/InsightAI/blob/master/docs/RAG_INGEST.md).
+
+| Export from django-db-schema-doc | Typical use in InsightAI |
+|----------------------------------|---------------------------|
+| `DATABASE.md` | **`schema/database_schema.md`** — primary source for NL → SQL |
+| `ai_schema.json` | Split `documents[].content` into `Knowledge/*.md` for semantic search |
+| `DATABASE.md` + `--project-hints` | Same file; hints appear at the top for agents |
+| `schema_examples.json` | Reference when authoring trusted SQL in `config/semantic/` |
+| `schema.json` | Diff/CI; not required by InsightAI out of the box |
+
+### 4. RAG tips (better answers)
+
+- **One topic per Knowledge file** — e.g. `Knowledge/shop-orders.md`, not one giant dump of the whole schema.
+- **Refresh on schema changes** — regenerate `DATABASE.md` in CI after `migrate`, copy into InsightAI, run `insightai-knowledge-sync --force`.
+- **Separate concerns** — schema export describes tables/columns; put policies, SLAs, and “how we define active customer” in `Knowledge/`.
+- **Use `export_ai_schema` for embedding** — each `documents[]` entry is already a self-contained chunk with `content` + `metadata` (table, domain, `django_model`).
+- **Read-only DB user** — point InsightAI at the same database (or a replica) with SELECT-only credentials ([InsightAI security model](https://github.com/behzad-njf/InsightAI#security-model)).
+- **Governance** — for production, use InsightAI’s `config/governance/` and API keys ([docs/GOVERNANCE.md](https://github.com/behzad-njf/InsightAI/blob/master/docs/GOVERNANCE.md)).
+
+There is no hard dependency between the two repos: django-db-schema-doc **generates** artifacts; InsightAI **consumes** them. Deeper setup (Docker, LLM keys, pgvector): follow the [InsightAI README](https://github.com/behzad-njf/InsightAI#quick-start).
 
 ## What Markdown includes
 
